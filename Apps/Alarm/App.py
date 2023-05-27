@@ -1,4 +1,4 @@
-# Made by hzFishy, <link>
+# Made by hzFishy, <https://github.com/hzFishy/Learning_python/blob/main/Apps/Alarm/App.py>
 # Using python 3.9.7 64-bit
 from tkinter import *
 from datetime import *
