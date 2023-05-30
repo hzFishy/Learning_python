@@ -98,23 +98,29 @@ def currentlyOnTimer(Time):
     split_StartedTime = c1[1].split(":")
     split_EndTime = c2[1].split(":")
 
+
+
+
     def get_diff():
+        dict_diffs = {
+        "h" : {"diff" : False, "index" : 0},
+        "m" : {"diff" : False, "index" : 0},
+        "s" : {"diff" : False, "index" : 0}
+        }
+        def get_key_from_index(index):
+            vs = ["h", "m", "s"]
+            return vs[index]
+    
         for index, (e1, e2) in enumerate(zip(split_StartedTime,split_EndTime)):
+            print("============")
+            print(e1,e2)
             if e1 != e2:
-                #difference.append(index)
-                difference = index
-        return difference
+                dict_diffs[get_key_from_index(index)]["diff"] = True
+        return dict_diffs
+
+    print("diffs:", get_diff())
 
 
-    diff_index_end = 0
-    for indexs in range(-1,get_diff()):
-        diff_index_end += 2
-    if diff_index_end == 4:
-        diff_index_end += 1
-    elif diff_index_end == 6:
-        diff_index_end += 2
-    diff_index_end +=len(c2[0])
-    print(f"++++++++++ {diff_index_end}")
 
     label_StartedTime = Text(frame_StartedTime, height=1,width=len(c1[0])+len(c1[1]))
     label_StartedTime.insert("end","".join(c1))
@@ -127,13 +133,13 @@ def currentlyOnTimer(Time):
     label_EndTime.insert("end", "".join(c2))
     label_EndTime.tag_configure("default", foreground="black")
     label_EndTime.tag_add("default", "1.0", f"1.{len(c2[0])}")
-
     label_EndTime.tag_configure("changed", foreground="red")
-    
-    print(f"START============================ {(len(c2[0])+diff_index_end-2)}")
-    print(f"END============================ {(len(c2[0])+diff_index_end-2)}")
 
-    label_EndTime.tag_add("changed", f"1.{diff_index_end-2}", f"1.{diff_index_end}")
+
+    for k_times, v_times in get_diff().items():
+        if v_times["diff"] == True:
+            label_EndTime.tag_add("changed", f"1.{v_times["index"]}", f"1.{v_times["index"]+2}")
+
 
     label_EndTime.pack(padx = 10, pady= 10, side=LEFT)
     label_EndTime.configure(state="disabled")
