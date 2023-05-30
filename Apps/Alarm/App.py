@@ -67,7 +67,7 @@ def Timer_Ended(frame_StartedTime):
     window.lift()
     window.attributes('-topmost', True)
     update_entries_stats(False)
-    print("Timer ended")
+    #print("Timer ended")
     def clearing():
         update_entries_stats(True)
         for entry in entries:
@@ -80,13 +80,22 @@ def Timer_Ended(frame_StartedTime):
                     pass
                 
         clearbutton.destroy()
-        frame_buttons.destroy()
+        frame_buttons.forget()
+        jobbutton.forget()
         frame_StartedTime.destroy()
         window.attributes('-topmost', False)
         
     
     clearbutton = Button(frame_StartedTime, text="Clear ALL", relief=RAISED, command= clearing)
     clearbutton.pack(side=BOTTOM, padx=10, pady=10)
+
+def countdown(TimerEnd):
+    time2 = datetime.now()
+
+    # Calculer la différence entre les temps
+    diff = timedelta(hours=TimerEnd.hour, minutes=TimerEnd.minute, seconds=TimerEnd.second) - timedelta(hours=time2.hour, minutes=time2.minute, seconds=time2.second)
+    print(diff)
+    window.after(1000, lambda: countdown(TimerEnd))
 
 def currentlyOnTimer(Time):
     frame_StartedTime = Frame(frame_Main, bg=colors["bg2"])
@@ -98,29 +107,22 @@ def currentlyOnTimer(Time):
     split_StartedTime = c1[1].split(":")
     split_EndTime = c2[1].split(":")
 
-
-
-
     def get_diff():
         dict_diffs = {
-        "h" : {"diff" : False, "index" : 0},
-        "m" : {"diff" : False, "index" : 0},
-        "s" : {"diff" : False, "index" : 0}
+        "h" : {"diff" : False, "index" : [f"{0+len(c2[0])}", f"{0+len(c2[0])+2}"]},
+        "m" : {"diff" : False, "index" : [f"{3+len(c2[0])}", f"{3+len(c2[0])+2}"]},
+        "s" : {"diff" : False, "index" : [f"{6+len(c2[0])}", f"{6+len(c2[0])+2}"]}
         }
         def get_key_from_index(index):
             vs = ["h", "m", "s"]
             return vs[index]
     
         for index, (e1, e2) in enumerate(zip(split_StartedTime,split_EndTime)):
-            print("============")
-            print(e1,e2)
             if e1 != e2:
                 dict_diffs[get_key_from_index(index)]["diff"] = True
         return dict_diffs
 
-    print("diffs:", get_diff())
-
-
+    #print("diffs:", get_diff())
 
     label_StartedTime = Text(frame_StartedTime, height=1,width=len(c1[0])+len(c1[1]))
     label_StartedTime.insert("end","".join(c1))
@@ -138,7 +140,7 @@ def currentlyOnTimer(Time):
 
     for k_times, v_times in get_diff().items():
         if v_times["diff"] == True:
-            label_EndTime.tag_add("changed", f"1.{v_times["index"]}", f"1.{v_times["index"]+2}")
+            label_EndTime.tag_add("changed", "1."+v_times["index"][0], "1."+v_times["index"][1])
 
 
     label_EndTime.pack(padx = 10, pady= 10, side=LEFT)
@@ -147,7 +149,7 @@ def currentlyOnTimer(Time):
     return frame_StartedTime
 
 def new_Timer(delay_data:str,is_spinbox:bool,Title:str,Message:str):
-    print(f"Timer: {delay_data} \n {is_spinbox} \n Title: {Title} \n Message: {Message}")
+    #print(f"Timer: {delay_data} \n {is_spinbox} \n Title: {Title} \n Message: {Message}")
     update_entries_stats(False)
 
     def delay_to_wait_seconds__hh_mm_ss(delay_data:str):
@@ -156,21 +158,21 @@ def new_Timer(delay_data:str,is_spinbox:bool,Title:str,Message:str):
         m = int(delay_data[1])
         s = int(delay_data[2])
 
-        print(h,m,s)
+        #print(h,m,s)
         return (h*3600*1000 + m*60*1000 + s*1000), [h,m,s]
 
     def delay_to_wait_seconds__hh_mm(delay_data:str):
         delay_data = delay_data.split(":")
         h = int(delay_data[0])
         m = int(delay_data[1])
-        print(h,m)
+        #print(h,m)
         return (h*3600*1000 + m*60*1000), [h, m, 0]
 
     if is_spinbox == False:
         delay_to_wait_seconds = delay_to_wait_seconds__hh_mm_ss(delay_data)
     else:
         delay_to_wait_seconds = delay_to_wait_seconds__hh_mm(delay_data)
-    print(delay_to_wait_seconds)
+    #print(delay_to_wait_seconds)
 
     def currentTime_addDelay(delay_to_wait_seconds):
         delay_to_wait_seconds = delay_to_wait_seconds[1]
@@ -185,9 +187,12 @@ def new_Timer(delay_data:str,is_spinbox:bool,Title:str,Message:str):
         return f"{h+dh}:{m+dm}:{s+ds}"
     
     dt2 = datetime.strptime((f"{delay_data}:00" if is_spinbox else delay_data), "%H:%M:%S")
-    TimeResult = (datetime.now() + timedelta(hours=dt2.hour, minutes=dt2.minute, seconds=dt2.second)).strftime("%H:%M:%S")
 
-    frame_StartedTime = currentlyOnTimer(TimeResult)
+    TimeResult = (datetime.now() + timedelta(hours=dt2.hour, minutes=dt2.minute, seconds=dt2.second))
+
+    frame_StartedTime = currentlyOnTimer(TimeResult.strftime("%H:%M:%S"))
+
+    window.after(1000, lambda: countdown(TimeResult))
     
     window.after(delay_to_wait_seconds[0], lambda: Timer_Ended(frame_StartedTime))
 
@@ -212,7 +217,7 @@ label_Title.pack(padx = 10, pady= 10, side = LEFT)
 
 
 def callback_input_Title():
-    spawn_jobbutton()
+    spawn_jobbutton(False)
 
 content_input_Title = StringVar()
 content_input_Title.trace("w", lambda  name, index, mode : callback_input_Title())
@@ -267,9 +272,10 @@ jobbutton = Button(frame_buttons,text="Ajouter",relief=RAISED, bg=colors["b2"] ,
     input_Title.get(),
     input_Description.get("1.0",'end-1c').replace("\n", " "))
     )
-def spawn_jobbutton():
+def spawn_jobbutton(test):
+    frame_buttons.pack()
     jobbutton.pack(side=LEFT, padx=10,pady=10)
-entries.append(jobbutton)
+    #entries.append(jobbutton)
 
 
 window.mainloop()
