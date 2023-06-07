@@ -21,7 +21,7 @@ colors = {
     "b3" : "#006fff",
     "gray" : "#9e9e9e",
 }
-
+global label_countdown
 # basic config
 window = Tk()
 window.title("Do It")
@@ -82,6 +82,7 @@ def Timer_Ended(frame_StartedTime):
         clearbutton.destroy()
         frame_buttons.forget()
         jobbutton.forget()
+        label_countdown.forget()
         frame_StartedTime.destroy()
         window.attributes('-topmost', False)
         
@@ -94,7 +95,9 @@ def countdown(TimerEnd):
 
     # Calculer la différence entre les temps
     diff = timedelta(hours=TimerEnd.hour, minutes=TimerEnd.minute, seconds=TimerEnd.second) - timedelta(hours=time2.hour, minutes=time2.minute, seconds=time2.second)
-    print(diff)
+    #print(diff)
+    label_countdown.configure(text = diff)
+
     window.after(1000, lambda: countdown(TimerEnd))
 
 def currentlyOnTimer(Time):
@@ -191,6 +194,12 @@ def new_Timer(delay_data:str,is_spinbox:bool,Title:str,Message:str):
     TimeResult = (datetime.now() + timedelta(hours=dt2.hour, minutes=dt2.minute, seconds=dt2.second))
 
     frame_StartedTime = currentlyOnTimer(TimeResult.strftime("%H:%M:%S"))
+
+    frame_Countdown = Frame(frame_Main, bg=colors["bg2"])
+    frame_Countdown.pack(pady= 20, padx= 20)
+    
+    label_countdown = Label(frame_Countdown, text="",bg=colors["b3"])
+    label_countdown.pack()
 
     window.after(1000, lambda: countdown(TimeResult))
     
